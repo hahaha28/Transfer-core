@@ -1,0 +1,65 @@
+@startuml
+
+
+
+class Packet{
+    Header header
+    Body body
+}
+class FilePacket{
+
+}
+class MsgPacket{
+    MsgPacket(String msg)
+}
+Packet <|-- FilePacket
+Packet <|-- MsgPacket
+
+class Header{
+    String name;
+    String type;
+    Long totalSize;
+    String number;
+    Long curSize;
+}
+
+abstract class Body{
+    Long contentLength()
+    String string()
+    InputStream byteStream()
+    byte[] bytes()
+}
+class FileBody{
+    InputStream inputStream
+}
+class MsgBody{
+    String msg
+}
+Body <|-- FileBody
+Body <|-- MsgBody
+Packet *-- Body
+Packet *- Header
+
+interface Transfer{
+    void sendPacket(Packet packet)
+    Packet receivePacket()
+}
+class BufferedTransfer{
+
+}
+class TransferImpl
+Transfer <|-- BufferedTransfer
+Transfer <|-- TransferImpl
+
+class SocketUtil{
+     Transfer transfer
+
+    Packet receive()
+    void asyncReceive()
+    void sendFile(file)
+    void sendMsg(msg)
+    void close()
+}
+Transfer -* SocketUtil
+
+@enduml
