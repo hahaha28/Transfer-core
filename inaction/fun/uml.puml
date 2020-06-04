@@ -60,6 +60,21 @@ class SocketUtil{
     void sendMsg(msg)
     void close()
 }
-Transfer -* SocketUtil
+
+
+class StatusMonitor{
+    StatusListener listener
+    void startTransfer()
+    void transfer(int len)
+    void endTransfer()
+}
+interface StatusListener{
+    void onStart(statusMonitor)
+    void onTransfer(statusMonitor)
+    void onEnd(statusMonitor)
+}
+StatusMonitor *-- StatusListener
+SocketUtil *-- Transfer
+SocketUtil *-- StatusMonitor
 
 @enduml

@@ -20,4 +20,12 @@ public interface Transfer {
      */
     Packet receivePacket()throws IOException;
 
+    /**
+     * 发送数据包，并监测发送状态
+     * @param packet
+     * @param listener
+     * @throws IOException
+     */
+    void sendPacket(Packet packet,StatusListener listener)throws IOException;
+
 }

@@ -2,6 +2,8 @@ package inaction.fun;
 
 import inaction.fun.bean.Body;
 import inaction.fun.bean.Header;
+import inaction.fun.data.transfer.StatusListener;
+import inaction.fun.data.transfer.StatusMonitor;
 import inaction.fun.data.transfer.TransferImpl;
 import inaction.fun.network.Server;
 import inaction.fun.network.SocketUtil;
@@ -30,16 +32,23 @@ public class Test2 {
                             if(type.equals("msg")){
                                 System.out.println(packet.getBody().string());
                             }else {
-                                File file = new File("E:/"+header.getName());
-                                file.createNewFile();
-                                FileOutputStream fos = new FileOutputStream(file);
-                                Body body = packet.getBody();
-                                InputStream is = body.byteStream();
-                                byte[] bytes = new byte[header.getCurSize().intValue()];
-                                is.read(bytes);
-                                System.out.println("test");
-                                fos.write(bytes);
-                                fos.close();
+                                FileOutputStream fos = new FileOutputStream("E:/"+header.getName());
+                                socketUtil.storeFile(packet, fos, new StatusListener() {
+                                    @Override
+                                    public void onStart(StatusMonitor monitor) {
+                                        System.out.println("开始接收");
+                                    }
+
+                                    @Override
+                                    public void onTransfer(StatusMonitor monitor) {
+                                        System.out.println("瞬时速度:"+monitor.getCurSpeed());
+                                    }
+
+                                    @Override
+                                    public void onEnd(StatusMonitor monitor) {
+                                        System.out.println("结束接收，平均速度："+monitor.getAverageSpeed());
+                                    }
+                                });
                             }
                         }catch (IOException e){
                             e.printStackTrace();

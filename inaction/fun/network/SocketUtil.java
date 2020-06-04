@@ -1,7 +1,10 @@
 package inaction.fun.network;
 
 import inaction.fun.bean.*;
+import inaction.fun.data.transfer.StatusListener;
+import inaction.fun.data.transfer.StatusMonitor;
 import inaction.fun.data.transfer.Transfer;
+import jdk.internal.util.xml.impl.Input;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -70,6 +73,33 @@ public class SocketUtil {
     }
 
     /**
+     * 发送文件
+     * @param name 文件名
+     * @param type 文件类型
+     * @param size 文件大小
+     * @param inputStream 输入流
+     * @param listener 状态监听器
+     */
+    public void sendFile(String name,String type,Long size,
+                         InputStream inputStream,StatusListener listener)throws IOException {
+        Header header = new Header(name,type,size,"1/1",size);
+        Body body = new FileBody(inputStream,size);
+        Packet packet = new Packet(header,body);
+        transfer.sendPacket(packet,listener);
+        inputStream.close();
+    }
+
+    /**
+     * 发送文件
+     * @param file File对象
+     * @param listener 状态监听器
+     * @throws IOException
+     */
+    public void sendFile(File file, StatusListener listener)throws IOException{
+        sendFile(file.getName(),getFileType(file.getName()),file.length(),new FileInputStream(file),listener);
+    }
+
+    /**
      * 发送消息
      * @param msg 消息
      * @throws IOException
@@ -79,6 +109,19 @@ public class SocketUtil {
         Header header = new Header("msg",MsgBody.TYPE,body.contentLength());
         Packet packet = new Packet(header,body);
         transfer.sendPacket(packet);
+    }
+
+    /**
+     * 发送消息
+     * @param msg 消息
+     * @param listener 状态监听器
+     * @throws IOException
+     */
+    public void sendMsg(String msg,StatusListener listener)throws IOException{
+        Body body = new MsgBody(msg);
+        Header header = new Header("msg",MsgBody.TYPE,body.contentLength());
+        Packet packet = new Packet(header,body);
+        transfer.sendPacket(packet,listener);
     }
 
     /**
@@ -100,7 +143,7 @@ public class SocketUtil {
                 try {
                     Packet packet = transfer.receivePacket();
                     listener.onReceive(packet);
-                }catch (EOFException | SocketException e){
+                }catch (EOFException | SocketException | UTFDataFormatException e){
                     if(onSocketCloseListener != null){
                         onSocketCloseListener.onSocketClose();
                     }
@@ -111,6 +154,40 @@ public class SocketUtil {
                 }
             }
         }).start();
+    }
+
+    /**
+     * 存储文件
+     * @param packet 接收到的包
+     * @param os
+     * @param listener
+     * @throws IOException
+     */
+    public void storeFile(Packet packet,OutputStream os,StatusListener listener)throws IOException{
+        StatusMonitor monitor = new StatusMonitor(listener);
+        monitor.startTransfer();
+
+        Header header = packet.getHeader();
+        Body body = packet.getBody();
+        InputStream is = body.byteStream();
+        int len = 0;
+        int size = 1024*30;
+        Long sum = header.getCurSize();
+        byte[] bytes = new byte[size];
+
+        while(sum != 0){
+            if(sum-size < 0){
+                size = sum.intValue();
+            }
+            len =is.read(bytes,0,size);
+            monitor.transfer(len);
+            os.write(bytes,0,len);
+            sum -= len;
+
+        }
+        os.close();
+        monitor.endTransfer();
+
     }
 
     /**
@@ -144,6 +221,14 @@ public class SocketUtil {
         if(onSocketCloseListener != null){
             onSocketCloseListener.onSocketClose();
         }
+    }
+
+    /**
+     * 是否连接
+     * @return
+     */
+    public Boolean isConnected(){
+        return socket.isConnected();
     }
 
     /**

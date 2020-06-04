@@ -5,6 +5,12 @@ import inaction.fun.bean.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * 带缓冲的传输
+ * 已废弃，因为在TCP长连接中，使用Java自带的缓冲流
+ * 会产生读取阻塞的问题
+ * @deprecated
+ */
 public class BufferedTransfer implements Transfer {
 
     private InputStream inputStream;
@@ -43,6 +49,12 @@ public class BufferedTransfer implements Transfer {
         }
 
         return new Packet(header, body);
+    }
+
+    @Override
+    public void sendPacket(Packet packet, StatusListener listener) throws IOException {
+        // 未实现，因为这个类废弃了
+        sendPacket(packet);
     }
 
     private void sendHeader(Header header)throws IOException {

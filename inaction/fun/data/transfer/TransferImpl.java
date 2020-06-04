@@ -17,8 +17,17 @@ public class TransferImpl implements Transfer {
 
     @Override
     public void sendPacket(Packet packet) throws IOException {
+        sendPacket(packet,null);
+    }
+
+    @Override
+    public void sendPacket(Packet packet, StatusListener listener) throws IOException {
         sendHeader(packet.getHeader());
-        sendBody(packet.getBody());
+        StatusMonitor monitor = null;
+        if(listener != null){
+            monitor = new StatusMonitor(listener);
+        }
+        sendBody(packet.getBody(),monitor);
     }
 
     @Override
@@ -47,16 +56,23 @@ public class TransferImpl implements Transfer {
     }
 
     private void sendBody(Body body)throws IOException {
+        sendBody(body,null);
+    }
+
+    private void sendBody(Body body,StatusMonitor monitor)throws IOException{
+        startTransfer(monitor);
         InputStream is = body.byteStream();
         BufferedInputStream bis = new BufferedInputStream(is);
-        byte[] bytes = new byte[1024];
+        byte[] bytes = new byte[1024*30];
         int len;
         while((len = bis.read(bytes))!= -1){
             outputStream.write(bytes,0,len);
-            System.out.println(len);
+            transfer(len,monitor);
+//            System.out.println("len="+len);
         }
-        System.out.println("sendBody");
+        endTransfer(monitor);
     }
+
 
     private Header receiveHeader()throws IOException{
         Header header = new Header();
@@ -74,5 +90,23 @@ public class TransferImpl implements Transfer {
         inputStream.read(bytes);
         String msg = new String(bytes, StandardCharsets.UTF_8);
         return new MsgBody(msg);
+    }
+
+    private void startTransfer(StatusMonitor monitor){
+        if(monitor != null){
+            monitor.startTransfer();
+        }
+    }
+
+    private void transfer(int len,StatusMonitor monitor){
+        if(monitor != null){
+            monitor.transfer(len);
+        }
+    }
+
+    private void endTransfer(StatusMonitor monitor){
+        if(monitor != null){
+            monitor.endTransfer();
+        }
     }
 }
