@@ -38,6 +38,14 @@ public class Client {
         }
     }
 
+    /**
+     * 连接是否关闭
+     * @return
+     */
+    public boolean isClose(){
+        return socket.isClosed();
+    }
+
     public String getServerIp() {
         return serverIp;
     }

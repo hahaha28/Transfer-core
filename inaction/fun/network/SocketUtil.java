@@ -224,11 +224,11 @@ public class SocketUtil {
     }
 
     /**
-     * 是否连接
+     * 是否关闭连接
      * @return
      */
-    public Boolean isConnected(){
-        return socket.isConnected();
+    public Boolean isClosed(){
+        return socket.isClosed();
     }
 
     /**
