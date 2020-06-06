@@ -15,7 +15,7 @@ public class Test1 {
     public static void main(String[] args) throws Exception{
 
         try {
-            Client client = new Client("127.0.0.1", 8888);
+            Client client = new Client("192.168.123.1", 9989);
             Socket socket = client.connect();
             SocketUtil socketUtil = new SocketUtil(socket, TransferImpl.class);
             socketUtil.sendFile(new File("E:\\test\\Android开发艺术探索@www.jqhtml.com.pdf"), new StatusListener() {
@@ -26,11 +26,12 @@ public class Test1 {
 
                 @Override
                 public void onTransfer(StatusMonitor monitor) {
-                    System.out.println("瞬时速度："+monitor.getCurSpeed());
+                    System.out.print("\r瞬时速度："+monitor.getCurSpeed());
                 }
 
                 @Override
                 public void onEnd(StatusMonitor monitor) {
+                    System.out.println();
                     System.out.println("传输结束");
                     System.out.println("平均速度："+monitor.getAverageSpeed());
                 }

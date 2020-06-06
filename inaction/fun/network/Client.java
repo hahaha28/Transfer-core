@@ -3,6 +3,7 @@ package inaction.fun.network;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -25,6 +26,19 @@ public class Client {
      */
     public Socket connect()throws UnknownHostException, IOException {
         socket = new Socket(serverIp,port);
+        return socket;
+    }
+
+    /**
+     * 连接服务器，并限制超时时间，如果错误会抛出异常
+     * @param timeout 超时时间，单位为毫秒
+     * @return
+     * @throws UnknownHostException
+     * @throws IOException
+     */
+    public Socket connect(int timeout)throws UnknownHostException,IOException{
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(serverIp,port),timeout);
         return socket;
     }
 
